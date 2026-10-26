@@ -51,7 +51,8 @@ Status validate_encode_args(char *argv[], EncodeInfo *encInfo)
     if (strcmp(ext, ".txt") == 0 ||
         strcmp(ext, ".c") == 0 ||
         strcmp(ext, ".sh") == 0 ||
-        strcmp(ext, ".cpp") == 0)
+        strcmp(ext, ".cpp") == 0 ||
+        strcmp(ext, ".py") == 0)
     {
         valid_ext = 1;
     }
@@ -222,7 +223,7 @@ Status encode_1byte_to_lsb(char data, char *buffer_8)
 
     for (i = 0; i < 8; i++)
     {
-        buffer_8[i] = buffer_8[i] & 0xFE;
+        buffer_8[i] = buffer_8[i] & ~(1);
 
         int bit = (value >> (7 - i)) & 1;
 
@@ -240,8 +241,7 @@ Status encode_4byte_to_lsb(int data, char *buffer_32)
 
     for (i = 0; i < 4; i++)
     {
-        unsigned char byte =
-            (value >> (24 - (i * 8))) & 0xFF;
+        unsigned char byte = (value >> (24 - (i * 8))) & 0xFF;
 
         if (encode_1byte_to_lsb(byte, &buffer_32[i * 8]) == failure)
         {
@@ -258,7 +258,7 @@ Status encode_magic_string(const char *magic_string, EncodeInfo *encInfo)
     char image_buffer[8];
     int i;
 
-    for (i = 0; magic_string[i] != '\0'; i++)
+    for(i = 0; magic_string[i] != '\0'; i++)
     {
         if (fread(image_buffer, 1, 8, encInfo->src_image_fptr) != 8)
         {

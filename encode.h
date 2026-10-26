@@ -1,6 +1,6 @@
 #ifndef ENCODE_H
 #define ENCODE_H
-
+#include "common.h"
 typedef struct EncodeInfo
 {
     /* Source Image info */

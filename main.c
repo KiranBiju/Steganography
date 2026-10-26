@@ -18,8 +18,7 @@ int main(int argc, char *argv[])
     {
         if (argc < 4 || argc > 5)
         {
-            printf("Error: Invalid arguments for encoding.\n");
-            printf("Usage: ./steganography -e <source.bmp> <secret_file.txt> [output.bmp]\n");
+            // print -> Error + usage msg
             return 1;
         }
 
@@ -34,7 +33,7 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
-    
+
     else if( opr == decode )
     {
 	if( argc < 3 || argc > 4 )	
