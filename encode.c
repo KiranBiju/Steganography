@@ -219,15 +219,15 @@ Status copy_bmp_header(EncodeInfo *encInfo)
 Status encode_1byte_to_lsb(char data, char *buffer_8)
 {
     int i;
-    unsigned char value = (unsigned char)data;
+    unsigned char ch = (unsigned char)data;
 
     for (i = 7; i >= 0; i--)
     {
-        int bit = (value & (1 << i)) >> i;
+        int get_msb = (ch & (1 << i)) >> i;
 
         buffer_8[7-i] = buffer_8[7-i] & ~(1);
 
-        buffer_8[7-i] = buffer_8[7-i] | bit;
+        buffer_8[7-i] = buffer_8[7-i] | get_msb;
     }
 
     return success;
