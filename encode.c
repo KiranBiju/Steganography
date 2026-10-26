@@ -221,13 +221,13 @@ Status encode_1byte_to_lsb(char data, char *buffer_8)
     int i;
     unsigned char value = (unsigned char)data;
 
-    for (i = 0; i < 8; i++)
+    for (i = 7; i >= 0; i--)
     {
-        buffer_8[i] = buffer_8[i] & ~(1);
+        int bit = (value & (1 << i)) >> i;
 
-        int bit = (value >> (7 - i)) & 1;
+        buffer_8[7-i] = buffer_8[7-i] & ~(1);
 
-        buffer_8[i] = buffer_8[i] | bit;
+        buffer_8[7-i] = buffer_8[7-i] | bit;
     }
 
     return success;
