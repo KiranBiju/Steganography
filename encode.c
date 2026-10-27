@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "encode.h"
-#include "common.h"
+#include "common.h" 
 
 /* Check operation type */
 Opr_type check_operation(char *option)
@@ -9,7 +9,7 @@ Opr_type check_operation(char *option)
     if (option == NULL)
         return unsupported;
 
-    if (strcmp(option, "-e") == 0)
+    if (strcmp(option, "-e") == 0) 
         return encode;
 
     if (strcmp(option, "-d") == 0)
@@ -19,7 +19,7 @@ Opr_type check_operation(char *option)
 }
 
 /* Validate command-line arguments for encoding */
-Status validate_encode_args(char *argv[], EncodeInfo *encInfo)
+Status validate_encode_args(char *argv[], EncodeInfo *encInfo) 
 {
     char *ext;
     int valid_ext = 0;
@@ -124,8 +124,7 @@ unsigned int get_file_size(FILE *fptr)
 /* Open source, secret and output files */
 Status open_files(EncodeInfo *encInfo)
 {
-    encInfo->src_image_fptr =
-        fopen(encInfo->src_image_fname, "rb");
+    encInfo->src_image_fptr = fopen(encInfo->src_image_fname, "rb");
 
     if (encInfo->src_image_fptr == NULL)
     {
@@ -133,8 +132,7 @@ Status open_files(EncodeInfo *encInfo)
         return failure;
     }
 
-    encInfo->secret_fptr =
-        fopen(encInfo->secret_fname, "rb");
+    encInfo->secret_fptr = fopen(encInfo->secret_fname, "rb"); 
 
     if (encInfo->secret_fptr == NULL)
     {
@@ -142,8 +140,7 @@ Status open_files(EncodeInfo *encInfo)
         return failure;
     }
 
-    encInfo->output_image_fptr =
-        fopen(encInfo->output_image_fname, "wb");
+    encInfo->output_image_fptr = fopen(encInfo->output_image_fname, "wb"); 
 
     if (encInfo->output_image_fptr == NULL)
     {
@@ -160,26 +157,18 @@ Status check_capacity(EncodeInfo *encInfo)
     unsigned int img_capacity;
     unsigned long long encoding_bits;
 
-    img_capacity =
-        get_image_size_for_bmp(encInfo->src_image_fptr);
+    img_capacity = get_image_size_for_bmp(encInfo->src_image_fptr);
 
-    if (img_capacity == 0)
-        return failure;
+    if(img_capacity == 0)
+       return failure;
 
-    encInfo->secret_file_size =
-        get_file_size(encInfo->secret_fptr);
+    encInfo->secret_file_size = get_file_size(encInfo->secret_fptr);
 
     /*
      * Required bits:
-     * Magic string + extension size + extension
-     * + secret file size + secret file data.
-     */
-    encoding_bits =
-        (strlen(MAGIC_STRING) +
-         sizeof(int) +
-         encInfo->secret_extn_size +
-         sizeof(int) +
-         encInfo->secret_file_size) * 8ULL;
+     * Magic string + extension size + extension + secret file size + secret file data.
+    */
+    encoding_bits = (strlen(MAGIC_STRING) + sizeof(int) + encInfo->secret_extn_size + sizeof(int) + encInfo->secret_file_size) * 8;
 
     printf("Image capacity: %u bytes\n", img_capacity);
     printf("Required encoding bits: %llu\n", encoding_bits);
@@ -198,16 +187,16 @@ Status check_capacity(EncodeInfo *encInfo)
 /* Copy the 54-byte BMP header */
 Status copy_bmp_header(EncodeInfo *encInfo)
 {
-    unsigned char header[54];
+    unsigned char header[54]; 
 
     rewind(encInfo->src_image_fptr);
 
-    if (fread(header, 1, sizeof(header), encInfo->src_image_fptr) != sizeof(header))
+    if (fread(header, 1, 54, encInfo->src_image_fptr) != 54)
     {
         return failure;
     }
 
-    if (fwrite(header, 1, sizeof(header), encInfo->output_image_fptr) != sizeof(header))
+    if (fwrite(header, 1, 54, encInfo->output_image_fptr) != 54)
     {
         return failure;
     }
@@ -237,13 +226,13 @@ Status encode_1byte_to_lsb(char data, char *buffer_8)
 Status encode_4byte_to_lsb(int data, char *buffer_32)
 {
     int i;
-    unsigned int value = (unsigned int)data;
+    unsigned int ch = (unsigned int)data;
 
     for (i = 0; i < 4; i++)
     {
-        unsigned char byte = (value >> (24 - (i * 8))) & 0xFF;
+        unsigned char bit = (ch >> (24 - (i * 8))) & ~(1);
 
-        if (encode_1byte_to_lsb(byte, &buffer_32[i * 8]) == failure)
+        if (encode_1byte_to_lsb(bit, &buffer_32[i * 8]) == failure)
         {
             return failure;
         }
@@ -255,10 +244,9 @@ Status encode_4byte_to_lsb(int data, char *buffer_32)
 /* Encode the magic string */
 Status encode_magic_string(const char *magic_string, EncodeInfo *encInfo)
 {
-    char image_buffer[8];
-    int i;
+    char image_buffer[8]; //Why 8
 
-    for(i = 0; magic_string[i] != '\0'; i++)
+    for(int i = 0; magic_string[i] != '\0'; i++)
     {
         if (fread(image_buffer, 1, 8, encInfo->src_image_fptr) != 8)
         {
@@ -327,9 +315,8 @@ Status encode_secret_file_extn(EncodeInfo *encInfo)
 /* Encode secret file size and secret file data */
 Status encode_secret_file_data(EncodeInfo *encInfo)
 {
-    char image_buffer[32];
+    char image_buffer[32]; 
     char buffer_8[8];
-    int i;
     int ch;
 
     /* Encode secret file size */
@@ -349,20 +336,19 @@ Status encode_secret_file_data(EncodeInfo *encInfo)
     }
 
     /* Encode secret file contents */
-    for (i = 0; i < encInfo->secret_file_size; i++)
+    for (int i = 0; i < encInfo->secret_file_size; i++)
     {
-        ch = fgetc(encInfo->secret_fptr);
+        ch = fgetc(encInfo->secret_fptr); //WHy fgetc
 
         if (ch == EOF)
             return failure;
 
-        if (fread(buffer_8, 1, 8,
-                  encInfo->src_image_fptr) != 8)
+        if (fread(buffer_8, 1, 8, encInfo->src_image_fptr) != 8) 
         {
             return failure;
         }
 
-        if (encode_1byte_to_lsb((char)ch, buffer_8) == failure)
+        if (encode_1byte_to_lsb((char)ch, buffer_8) == failure) 
         {
             return failure;
         }
@@ -381,13 +367,13 @@ Status copy_remaining_img_data(EncodeInfo *encInfo)
 {
     int ch;
 
-    while ((ch = fgetc(encInfo->src_image_fptr)) != EOF)
+    while ((ch = fgetc(encInfo->src_image_fptr)) != EOF) 
     {
         if (fputc(ch, encInfo->output_image_fptr) == EOF)
             return failure;
     }
 
-    if (ferror(encInfo->src_image_fptr))
+    if (ferror(encInfo->src_image_fptr)) //WTF is ferror
         return failure;
 
     return success;
@@ -398,8 +384,8 @@ Status do_encoding(char *argv[], EncodeInfo *encInfo)
 {
     Status status = failure;
 
-    /* Initialize file pointers */
-    encInfo->src_image_fptr = NULL;
+    /* Initialize file pointers */    
+    encInfo->src_image_fptr = NULL;  
     encInfo->secret_fptr = NULL;
     encInfo->output_image_fptr = NULL;
 
@@ -429,9 +415,9 @@ Status do_encoding(char *argv[], EncodeInfo *encInfo)
 
     status = success;
 
-reset:
+reset:                                   
 
-    if (encInfo->src_image_fptr != NULL)
+    if (encInfo->src_image_fptr != NULL) 
         fclose(encInfo->src_image_fptr);
 
     if (encInfo->secret_fptr != NULL)
